@@ -1,0 +1,73 @@
+[project]
+name = "rss-cline"
+version = "0.1.0"
+description = "Event-driven RSS news monitoring system with NER"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "httpx>=0.28.0",
+    "faststream[nats]>=0.7.0",
+    "spacy>=3.8.0",
+    "pydantic-settings>=2.7.0",
+    "asyncpg>=0.30.0",
+    "feedparser>=6.0.11",
+    "apscheduler>=3.10.4",
+    "sqlalchemy>=2.0.0",
+    "alembic>=1.14.0",
+]
+
+[project.scripts]
+run-monitor = "monitor.__main__:main"
+run-worker = "worker.__main__:main"
+
+[tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "function"
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "pytest-mock>=3.15.1",
+    "ruff>=0.16.0",
+]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+    "A",
+    "B",
+    "BLE",
+    "C4",
+    "DTZ",
+    "E",
+    "EXE",
+    "F",
+    "G",
+    "I",
+    "ICN",
+    "ISC",
+    "N",
+    "PGH",
+    "PIE",
+    "PL",
+    "PT",
+    "PYI",
+    "RUF",
+    "S",
+    "UP",
+    "W",
+    "YTT",
+]
+extend-ignore = ["PLR", "S101", "S104", "S105", "S106"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+docstring-code-format = true

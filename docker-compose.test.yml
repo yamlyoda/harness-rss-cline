@@ -1,0 +1,26 @@
+services:
+  nats-test:
+    image: nats:latest
+    ports:
+      - "4223:4222"
+    healthcheck:
+      test: ["CMD", "nats", "ping", "-c", "1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  postgres-test:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: rss_news_test
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_pass
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test_user -d rss_news_test"]
+      interval: 5s
+      timeout: 3s
+      retries: 5

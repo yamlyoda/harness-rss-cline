@@ -1,0 +1,67 @@
+services:
+  nats:
+    image: nats:latest
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-rss_news}
+      POSTGRES_USER: ${POSTGRES_USER:-rss_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rss_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-rss_user} -d ${POSTGRES_DB:-rss_news}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile.monitor
+    ports:
+      - "8000:8000"
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-rss_news}
+      POSTGRES_USER: ${POSTGRES_USER:-rss_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rss_password}
+      NATS_URL: nats://nats:4222
+      MONITOR_INTERVAL_MINUTES: ${MONITOR_INTERVAL_MINUTES:-5}
+      RSS_SOURCES: ${RSS_SOURCES:-ria,tass,kommersant}
+      RSS_URL_RIA: ${RSS_URL_RIA:-https://ria.ru/export/rss2/archive/index.xml}
+      RSS_URL_TASS: ${RSS_URL_TASS:-https://tass.ru/rss/v2.xml}
+      RSS_URL_KOMMERSANT: ${RSS_URL_KOMMERSANT:-https://www.kommersant.ru/RSS/news.xml}
+    depends_on:
+      nats:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-rss_news}
+      POSTGRES_USER: ${POSTGRES_USER:-rss_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-rss_password}
+      NATS_URL: nats://nats:4222
+    depends_on:
+      nats:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
