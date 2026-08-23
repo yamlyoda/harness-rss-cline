@@ -11,7 +11,8 @@
 │   │   ├── core-beliefs.md
 │   │   └── broker-choice.md
 │   ├── execution-plans/
-│   │   └── 001-add-retry-and-broken-xml.md
+│   │   ├── 001-add-retry-and-broken-xml.md
+│   │   └── 002-harness-conformance.md
 │   ├── technical-debt/
 │   │   └── known-issues.md
 │   └── principles/
